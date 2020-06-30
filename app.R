@@ -1,10 +1,11 @@
 library(shiny)
 library(shinyjs)
 library(V8)
+library(httr)
 
 email <- "maurits.evers@gmail.com"
-version <- "1.0"
-date <- "3 March 2020"
+version <- "1.1"
+date <- "1 July 2020"
 gh <- "https://github.com/mevers/shiny_STRING"
 
 ncbi_taxon_id <- list(
@@ -44,6 +45,7 @@ ui <- fluidPage(
     selectInput("organism", "Organism", ncbi_taxon_id),
     textInput("gene", "Gene symbol", value = "TP53"),
     actionButton("button", "Show network!"),
+    actionButton("button_save", "Save static network as PNG"),
     tags$div(id = "stringEmbedded"),
     HTML(sprintf("<footer id = 'footer'>
         Author: <a href='mailto:%s?subject=STRING db explorer'>%s</a>,
@@ -57,6 +59,12 @@ server <- function(input, output, session) {
 
     onclick("button", {
         js$loadStringData(input$organism, input$gene)
+    })
+
+    onclick("button_save", {
+        baseurl <- "https://string-db.org/api/image/network?identifiers="
+        url <- sprintf("%s%s", baseurl, paste0(input$gene, collapse = "%0d"))
+        GET(url, write_disk("network.png", overwrite = TRUE))
     })
 
 }
