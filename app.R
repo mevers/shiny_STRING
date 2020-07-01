@@ -14,38 +14,22 @@ ncbi_taxon_id <- list(
     "Drosophila melanogaster" = 7227,
     "Arabidopsis thaliana" = 3702)
 
-# Note:
-# 1. The 'identifiers' argument needs to be an array otherwise we get an error:
-#    TypeError: value.join is not a function.
-# 2. Best to let shinyjs match function arguments via shinyjs.getParams; see:
-#    https://cran.r-project.org/web/packages/shinyjs/vignettes/shinyjs-extend.html
-#    This also means we can avoid a req(input$gene) in onclick("button")
-jsCode <- "
-    shinyjs.loadStringData = function(params) {
-        var defaultParams = {
-            organism : '9606',
-            gene : 'TP53'
-        };
-        params = shinyjs.getParams(params, defaultParams);
-        getSTRING('https://string-db.org', {
-            'species': params.organism,
-            'identifiers': [params.gene],
-            'network_flavor':'confidence'});
-    }"
-
-
 ui <- fluidPage(
 
     useShinyjs(),
-    extendShinyjs(text = jsCode),
+    extendShinyjs(script = "www/my_functions.js"),
     includeScript("http://string-db.org/javascript/combined_embedded_network_v2.0.2.js"),
+    includeScript("https://blueimp.github.io/JavaScript-Canvas-to-Blob/js/canvas-to-blob.js"),
+    includeScript("https://cdnjs.cloudflare.com/ajax/libs/canvg/1.4/rgbcolor.min.js"),
+    includeScript("https://cdnjs.cloudflare.com/ajax/libs/stackblur-canvas/1.4.1/stackblur.min.js"),
+    includeScript("https://cdn.jsdelivr.net/npm/canvg/dist/browser/canvg.min.js"),
     includeCSS("www/style.css"),
 
     h2("STRING database explorer"),
     selectInput("organism", "Organism", ncbi_taxon_id),
     textInput("gene", "Gene symbol", value = "TP53"),
     actionButton("button", "Show network!"),
-    actionButton("button_save", "Save static network as PNG"),
+    actionButton("button_save", "Save network as PNG"),
     tags$div(id = "stringEmbedded"),
     HTML(sprintf("<footer id = 'footer'>
         Author: <a href='mailto:%s?subject=STRING db explorer'>%s</a>,
@@ -62,9 +46,7 @@ server <- function(input, output, session) {
     })
 
     onclick("button_save", {
-        baseurl <- "https://string-db.org/api/image/network?identifiers="
-        url <- sprintf("%s%s", baseurl, paste0(input$gene, collapse = "%0d"))
-        GET(url, write_disk("network.png", overwrite = TRUE))
+        js$saveSVGasPNG()
     })
 
 }
