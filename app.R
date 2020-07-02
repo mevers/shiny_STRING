@@ -4,8 +4,8 @@ library(V8)
 library(httr)
 
 email <- "maurits.evers@gmail.com"
-version <- "1.1"
-date <- "1 July 2020"
+version <- "1.2"
+date <- "2 July 2020"
 gh <- "https://github.com/mevers/shiny_STRING"
 
 ncbi_taxon_id <- list(

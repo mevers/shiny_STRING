@@ -18,7 +18,8 @@ shinyjs.loadStringData = function(params) {
     getSTRING('https://string-db.org', {
         'species': params.organism,
         'identifiers': [params.gene],
-        'network_flavor':'confidence'});
+        'network_flavor':'confidence'
+    });
 };
 
 shinyjs.saveSVGasPNG = function() {
@@ -37,9 +38,23 @@ shinyjs.saveSVGasPNG = function() {
         }
     };
 
+    function scaleSVG(svg, width, height) {
+        // Need to clone svg otherwise changes will affect the original SVG
+        // Note to self: All function arguments in JS are mutable bindings
+        var svg_scaled = svg.cloneNode(true);
+        var orgWidth = parseFloat(svg.getAttribute("width"));
+        var orgHeight = parseFloat(svg.getAttribute("height"));
+        svg_scaled.setAttribute("width", width);
+        svg_scaled.setAttribute("height", height);
+        svg_scaled.setAttribute("viewBox", "0 0 " + orgWidth + " " + orgHeight);
+        return svg_scaled;
+    };
+
+    // Get SVG and rescale
     var svg = document.querySelector('#svg_network_image');
-    console.log(svg)
-    var data = (new XMLSerializer()).serializeToString(svg);
+    var scaled_svg = scaleSVG(svg, width = 1280, height = 800);
+
+    var data = (new XMLSerializer()).serializeToString(scaled_svg);
 
     var canvas = document.createElement('canvas');
     canvg(canvas, data, {
